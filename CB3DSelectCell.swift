@@ -17,6 +17,7 @@ class CB3DSelectCell: UICollectionViewCell {
     
     var offsetDirection: OffsetDirection = .right
     var animationDuration: CFTimeInterval = 0.2
+    var maxCornerRadius: CGFloat = 14.0
     
     private static let animationKey: String = "CBAnimationSelectionCellSelectAnimation"
     
@@ -212,8 +213,8 @@ class CB3DSelectCell: UICollectionViewCell {
             shadowRadius.toValue = 35.0
             
             let cornerRadius = CABasicAnimation(keyPath: "cornerRadius")
-            cornerRadius.fromValue = 0
-            cornerRadius.toValue = 14.0
+            cornerRadius.fromValue = layer.cornerRadius
+            cornerRadius.toValue = maxCornerRadius
             cornerRadius.isRemovedOnCompletion = false
             cornerRadius.fillMode = .forwards
             cornerRadius.duration =  animationDuration
@@ -233,7 +234,7 @@ class CB3DSelectCell: UICollectionViewCell {
             snapshotContainer.layer.shadowOpacity = 0.3
             snapshotContainer.layer.shadowOffset = CGSize(width: horOffsetMultiplier * -20.0, height: 20.0)
             snapshotContainer.layer.shadowRadius = 35.0
-            snapshotContainer.layer.cornerRadius = 14.0
+            snapshotContainer.layer.cornerRadius = maxCornerRadius
         }
     }
     
