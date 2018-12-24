@@ -23,10 +23,18 @@ class CB3DSelectCell: UICollectionViewCell {
     @IBOutlet weak var lblTime: UILabel!
     @IBOutlet weak var lblPrice: UILabel!
     
+    
+    private var snapshotContainer: UIView =  {
+        let view = UIView()
+        view.layer.shadowColor = UIColor.black.cgColor
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
     private var snapshotView: UIImageView =  {
         let imageView = UIImageView()
         imageView.layer.shadowColor = UIColor.black.cgColor
         imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.clipsToBounds = true
         return imageView
     }()
     private var overlayView: UIView = UIView()
@@ -37,15 +45,15 @@ class CB3DSelectCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        configureOverlay()
+        configureViews()
     }
     
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
-        configureOverlay()
+        configureViews()
     }
     
-    private func configureOverlay() {
+    private func configureViews() {
         addSubview(overlayView)
         overlayView.translatesAutoresizingMaskIntoConstraints = false
         overlayView.topAnchor.constraint(equalTo: topAnchor).isActive = true
@@ -53,6 +61,23 @@ class CB3DSelectCell: UICollectionViewCell {
         overlayView.trailingAnchor.constraint(equalTo: trailingAnchor).isActive = true
         overlayView.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
         overlayView.isHidden = true
+        
+        snapshotContainer.addSubview(snapshotView)
+        snapshotView.topAnchor.constraint(equalTo: snapshotContainer.topAnchor).isActive = true
+        snapshotView.leadingAnchor.constraint(equalTo: snapshotContainer.leadingAnchor).isActive = true
+        snapshotView.trailingAnchor.constraint(equalTo: snapshotContainer.trailingAnchor).isActive = true
+        snapshotView.bottomAnchor.constraint(equalTo: snapshotContainer.bottomAnchor).isActive = true
+        let gesture = UITapGestureRecognizer(target: self, action: #selector(snapshotTapped))
+        snapshotContainer.addGestureRecognizer(gesture)
+    }
+    
+    @objc private func snapshotTapped() {
+        guard _selected else { return }
+        deselect(animated: true)
+        if let collectionView = superview as? UICollectionView,
+           let indexPath = collectionView.indexPath(for: self) {
+            collectionView.deselectItem(at: indexPath, animated: true)
+        }
     }
     
     var _selected: Bool = false
@@ -70,16 +95,17 @@ class CB3DSelectCell: UICollectionViewCell {
             self?.csCenterX = nil
             self?.csCenterY = nil
             self?.overlayView.isHidden = true
-            self?.snapshotView.removeFromSuperview()
+            self?.snapshotContainer.removeFromSuperview()
+            self?.snapshotContainer.layer.removeAllAnimations()
             self?.snapshotView.layer.removeAllAnimations()
-            self?.snapshotView.layer.transform = CATransform3DIdentity
+            self?.snapshotContainer.layer.transform = CATransform3DIdentity
             self?.overlayView.isHidden = true
         }
         guard animated else {
             finishDeselection()
             return
         }
-        let presentationLayer = snapshotView.layer.presentation() ?? snapshotView.layer
+        let presentationLayer = snapshotContainer.layer.presentation() ?? snapshotContainer.layer
         let currentTransform: CGAffineTransform = CATransform3DGetAffineTransform(presentationLayer.transform)
         
         let animationGroup = CAAnimationGroup()
@@ -99,7 +125,14 @@ class CB3DSelectCell: UICollectionViewCell {
         shadowRadius.fromValue = presentationLayer.shadowRadius
         shadowRadius.toValue = 0.0
         
-        let animations: [CAAnimation] = [translate, shadowOpacity, shadowOffset, shadowRadius]
+        let cornerRadius = CABasicAnimation(keyPath: "cornerRadius")
+        cornerRadius.fromValue = presentationLayer.shadowRadius
+        cornerRadius.toValue = layer.cornerRadius
+        cornerRadius.isRemovedOnCompletion = false
+        cornerRadius.duration = animationDuration
+        cornerRadius.fillMode = .forwards
+        
+        let animations: [CAAnimation] = [translate, shadowOpacity, shadowOffset, shadowRadius, cornerRadius]
         animationGroup.animations = animations
         animationGroup.isRemovedOnCompletion = false
         animationGroup.duration = animationDuration
@@ -109,7 +142,8 @@ class CB3DSelectCell: UICollectionViewCell {
         CATransaction.setCompletionBlock {
             finishDeselection()
         }
-        snapshotView.layer.add(animationGroup, forKey: type(of: self).animationKey)
+        snapshotView.layer.add(cornerRadius, forKey: type(of: self).animationKey)
+        snapshotContainer.layer.add(animationGroup, forKey: type(of: self).animationKey)
         CATransaction.commit()
     }
     
@@ -132,23 +166,23 @@ class CB3DSelectCell: UICollectionViewCell {
         overlayView.isHidden = false
         bringSubviewToFront(overlayView)
         
-        
         snapshotView.image = capturedImage
-        superview.addSubview(snapshotView)
-        superview.bringSubviewToFront(snapshotView)
-        snapshotView.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
-        snapshotView.heightAnchor.constraint(equalTo: heightAnchor).isActive = true
+        superview.addSubview(snapshotContainer)
+        superview.bringSubviewToFront(snapshotContainer)
+        snapshotContainer.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
+        snapshotContainer.heightAnchor.constraint(equalTo: heightAnchor).isActive = true
+        
         if let csCenterX = csCenterX {
-            snapshotView.superview?.removeConstraint(csCenterX)
+            snapshotContainer.superview?.removeConstraint(csCenterX)
         }
         if let csCenterY = csCenterY {
-            snapshotView.superview?.removeConstraint(csCenterY)
+            snapshotContainer.superview?.removeConstraint(csCenterY)
         }
-        csCenterX = snapshotView.centerXAnchor.constraint(equalTo: centerXAnchor)
-        csCenterY = snapshotView.centerYAnchor.constraint(equalTo: centerYAnchor)
+        csCenterX = snapshotContainer.centerXAnchor.constraint(equalTo: centerXAnchor)
+        csCenterY = snapshotContainer.centerYAnchor.constraint(equalTo: centerYAnchor)
         csCenterX?.isActive = true
         csCenterY?.isActive = true
-        snapshotView.layoutIfNeeded()
+        snapshotContainer.layoutIfNeeded()
         
         let horOffsetMultiplier: CGFloat
         switch offsetDirection {
@@ -177,20 +211,30 @@ class CB3DSelectCell: UICollectionViewCell {
             shadowRadius.fromValue = 0
             shadowRadius.toValue = 35.0
             
-            let animations: [CAAnimation] = [translate, shadowOpacity, shadowOffset, shadowRadius]
+            let cornerRadius = CABasicAnimation(keyPath: "cornerRadius")
+            cornerRadius.fromValue = 0
+            cornerRadius.toValue = 14.0
+            cornerRadius.isRemovedOnCompletion = false
+            cornerRadius.fillMode = .forwards
+            cornerRadius.duration =  animationDuration
+            
+            let animations: [CAAnimation] = [translate, shadowOpacity, shadowOffset, shadowRadius, cornerRadius]
             
             animationGroup.animations = animations
             animationGroup.isRemovedOnCompletion = false
             animationGroup.fillMode = .forwards
             animationGroup.duration =  animationDuration
-            snapshotView.layer.add(animationGroup, forKey: type(of: self).animationKey)
+            snapshotContainer.layer.add(animationGroup, forKey: type(of: self).animationKey)
+            snapshotView.layer.add(cornerRadius, forKey: type(of: self).animationKey)
         } else {
-            snapshotView.layer.transform = CATransform3DTranslate(CATransform3DIdentity,
+            snapshotContainer.layer.transform = CATransform3DTranslate(CATransform3DIdentity,
                                                                   horOffsetMultiplier * frame.width * 0.2,
                                                                   -frame.height * 0.2, 0)
-            snapshotView.layer.shadowOpacity = 0.3
-            snapshotView.layer.shadowOffset = CGSize(width: horOffsetMultiplier * -20.0, height: 20.0)
-            snapshotView.layer.shadowRadius = 35.0
+            snapshotContainer.layer.shadowOpacity = 0.3
+            snapshotContainer.layer.shadowOffset = CGSize(width: horOffsetMultiplier * -20.0, height: 20.0)
+            snapshotContainer.layer.shadowRadius = 35.0
+            snapshotContainer.layer.cornerRadius = 14.0
         }
     }
+    
 }
