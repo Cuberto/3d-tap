@@ -19,6 +19,7 @@ class CB3DSelectCell: UICollectionViewCell {
     var animationDuration: CFTimeInterval = 0.2
     var maxCornerRadius: CGFloat = 14.0
     var selectionColor: UIColor = #colorLiteral(red: 1, green: 0.737254902, blue: 0.2549019608, alpha: 1)
+    var selectionTimingFunction: CAMediaTimingFunction = CAMediaTimingFunction(name: .easeOut)
     
     private static let animationKey: String = "CBAnimationSelectionCellSelectAnimation"
     
@@ -129,28 +130,34 @@ class CB3DSelectCell: UICollectionViewCell {
         let translate = CABasicAnimation(keyPath: "transform.translation")
         translate.fromValue = CGSize(width: currentTransform.tx, height: currentTransform.ty)
         translate.toValue = CGSize.zero
+        translate.timingFunction = selectionTimingFunction
         
         let shadowOpacity = CABasicAnimation(keyPath: "shadowOpacity")
         shadowOpacity.fromValue = presentationLayer.shadowOpacity
         shadowOpacity.toValue = 0.0
+        shadowOpacity.timingFunction = selectionTimingFunction
         
         let shadowOffset = CABasicAnimation(keyPath: "shadowOffset")
         shadowOffset.fromValue = presentationLayer.shadowOffset
         shadowOffset.toValue = CGSize.zero
+        shadowOffset.timingFunction = selectionTimingFunction
         
         let shadowRadius = CABasicAnimation(keyPath: "shadowRadius")
         shadowRadius.fromValue = presentationLayer.shadowRadius
         shadowRadius.toValue = 0.0
+        shadowRadius.timingFunction = selectionTimingFunction
         
         let cornerRadius = CABasicAnimation(keyPath: "cornerRadius")
         cornerRadius.fromValue = presentationLayer.shadowRadius
         cornerRadius.toValue = layer.cornerRadius
         cornerRadius.isRemovedOnCompletion = false
+        cornerRadius.timingFunction = selectionTimingFunction
         cornerRadius.duration = animationDuration
         cornerRadius.fillMode = .forwards
         
         let animations: [CAAnimation] = [translate, shadowOpacity, shadowOffset, shadowRadius, cornerRadius]
         animationGroup.animations = animations
+        animationGroup.timingFunction = selectionTimingFunction
         animationGroup.isRemovedOnCompletion = false
         animationGroup.duration = animationDuration
         animationGroup.fillMode = .forwards
@@ -216,22 +223,27 @@ class CB3DSelectCell: UICollectionViewCell {
             translate.fromValue = CGSize.zero
             translate.toValue = CGSize(width: horOffsetMultiplier * frame.width * 0.2,
                                        height: -frame.height * 0.2)
+            translate.timingFunction = selectionTimingFunction
             
             let shadowOpacity = CABasicAnimation(keyPath: "shadowOpacity")
             shadowOpacity.fromValue = 0
             shadowOpacity.toValue = 0.3
+            shadowOpacity.timingFunction = selectionTimingFunction
             
             let shadowOffset = CABasicAnimation(keyPath: "shadowOffset")
             shadowOffset.fromValue = CGSize.zero
             shadowOffset.toValue = CGSize(width: horOffsetMultiplier * -20, height: 20)
+            shadowOffset.timingFunction = selectionTimingFunction
             
             let shadowRadius = CABasicAnimation(keyPath: "shadowRadius")
             shadowRadius.fromValue = 0
             shadowRadius.toValue = 35.0
+            shadowRadius.timingFunction = selectionTimingFunction
             
             let cornerRadius = CABasicAnimation(keyPath: "cornerRadius")
             cornerRadius.fromValue = layer.cornerRadius
             cornerRadius.toValue = maxCornerRadius
+            cornerRadius.timingFunction = selectionTimingFunction
             cornerRadius.isRemovedOnCompletion = false
             cornerRadius.fillMode = .forwards
             cornerRadius.duration =  animationDuration
@@ -239,6 +251,7 @@ class CB3DSelectCell: UICollectionViewCell {
             let animations: [CAAnimation] = [translate, shadowOpacity, shadowOffset, shadowRadius, cornerRadius]
             
             animationGroup.animations = animations
+            animationGroup.timingFunction = selectionTimingFunction
             animationGroup.isRemovedOnCompletion = false
             animationGroup.fillMode = .forwards
             animationGroup.duration =  animationDuration
