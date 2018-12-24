@@ -18,6 +18,7 @@ class CB3DSelectCell: UICollectionViewCell {
     var offsetDirection: OffsetDirection = .right
     var animationDuration: CFTimeInterval = 0.2
     var maxCornerRadius: CGFloat = 14.0
+    var selectionColor: UIColor = #colorLiteral(red: 1, green: 0.737254902, blue: 0.2549019608, alpha: 1)
     
     private static let animationKey: String = "CBAnimationSelectionCellSelectAnimation"
     
@@ -39,6 +40,7 @@ class CB3DSelectCell: UICollectionViewCell {
         return imageView
     }()
     private var overlayView: UIView = UIView()
+    private var overlaySideView: UIView = UIView()
     
     
     var csCenterX: NSLayoutConstraint?
@@ -55,6 +57,11 @@ class CB3DSelectCell: UICollectionViewCell {
     }
     
     private func configureViews() {
+        configureOverlay()
+        configureSnapshot()
+    }
+    
+    private func configureOverlay() {
         addSubview(overlayView)
         overlayView.translatesAutoresizingMaskIntoConstraints = false
         overlayView.topAnchor.constraint(equalTo: topAnchor).isActive = true
@@ -62,7 +69,16 @@ class CB3DSelectCell: UICollectionViewCell {
         overlayView.trailingAnchor.constraint(equalTo: trailingAnchor).isActive = true
         overlayView.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
         overlayView.isHidden = true
-        
+    
+        overlayView.addSubview(overlaySideView)
+        overlaySideView.translatesAutoresizingMaskIntoConstraints = false
+        overlaySideView.leadingAnchor.constraint(equalTo: overlayView.leadingAnchor).isActive = true
+        overlaySideView.topAnchor.constraint(equalTo: overlayView.topAnchor).isActive = true
+        overlaySideView.bottomAnchor.constraint(equalTo: overlayView.bottomAnchor).isActive = true
+        overlaySideView.widthAnchor.constraint(equalToConstant: 5.0).isActive = true
+    }
+    
+    private func configureSnapshot() {
         snapshotContainer.addSubview(snapshotView)
         snapshotView.topAnchor.constraint(equalTo: snapshotContainer.topAnchor).isActive = true
         snapshotView.leadingAnchor.constraint(equalTo: snapshotContainer.leadingAnchor).isActive = true
@@ -164,6 +180,7 @@ class CB3DSelectCell: UICollectionViewCell {
         UIGraphicsEndImageContext()
         layer.isHidden = wasHidden
         overlayView.backgroundColor = superview.backgroundColor
+        overlaySideView.backgroundColor = selectionColor
         overlayView.isHidden = false
         bringSubviewToFront(overlayView)
         
