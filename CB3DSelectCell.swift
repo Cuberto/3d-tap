@@ -16,7 +16,7 @@ class CB3DSelectCell: UICollectionViewCell {
     }
     
     var offsetDirection: OffsetDirection = .right
-    var animationDuration: CFTimeInterval = 0.3
+    var animationDuration: CFTimeInterval = 0.35
     var maxCornerRadius: CGFloat = 14.0
     var selectionColor: UIColor = #colorLiteral(red: 1, green: 0.737254902, blue: 0.2549019608, alpha: 1)
     var selectionTimingFunction: CAMediaTimingFunction = CAMediaTimingFunction(name: .easeOut)
@@ -234,7 +234,7 @@ class CB3DSelectCell: UICollectionViewCell {
             
             let shadowOffset = CABasicAnimation(keyPath: "shadowOffset")
             shadowOffset.fromValue = CGSize.zero
-            shadowOffset.toValue = CGSize(width: horOffsetMultiplier * -20, height: 30)
+            shadowOffset.toValue = CGSize(width: horOffsetMultiplier * -20, height: 45)
             shadowOffset.timingFunction = selectionTimingFunction
             
             let shadowRadius = CABasicAnimation(keyPath: "shadowRadius")
@@ -264,7 +264,7 @@ class CB3DSelectCell: UICollectionViewCell {
                                                                   horOffsetMultiplier * frame.width * 0.2,
                                                                   -frame.height * 0.2, 0)
             snapshotContainer.layer.shadowOpacity = 0.3
-            snapshotContainer.layer.shadowOffset = CGSize(width: horOffsetMultiplier * -20.0, height: 30.0)
+            snapshotContainer.layer.shadowOffset = CGSize(width: horOffsetMultiplier * -20.0, height: 45.0)
             snapshotContainer.layer.shadowRadius = 35.0
             snapshotContainer.layer.cornerRadius = maxCornerRadius
         }
