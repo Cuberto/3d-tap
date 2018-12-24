@@ -8,6 +8,11 @@
 
 import UIKit
 
+class TestCell: CB3DSelectCell {
+    @IBOutlet weak var lblTime: UILabel!
+    @IBOutlet weak var lblPrice: UILabel!
+}
+
 class ViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
 
     @IBOutlet weak var collectionView: UICollectionView!
@@ -31,7 +36,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     }
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "test", for: indexPath)
-        if let cell = cell as? CB3DSelectCell {
+        if let cell = cell as? TestCell {
             cell.lblTime.text = dateFormatter.string(from: startDate.addingTimeInterval(TimeInterval(60*30*indexPath.item)))
             cell.lblPrice.text = "$\(Int.random(in: 1...12) * 10)"
             cell.offsetDirection = (indexPath.item % 2 == 0) ? .right : .left

@@ -16,16 +16,12 @@ class CB3DSelectCell: UICollectionViewCell {
     }
     
     var offsetDirection: OffsetDirection = .right
-    var animationDuration: CFTimeInterval = 0.2
+    var animationDuration: CFTimeInterval = 0.3
     var maxCornerRadius: CGFloat = 14.0
     var selectionColor: UIColor = #colorLiteral(red: 1, green: 0.737254902, blue: 0.2549019608, alpha: 1)
     var selectionTimingFunction: CAMediaTimingFunction = CAMediaTimingFunction(name: .easeOut)
     
     private static let animationKey: String = "CBAnimationSelectionCellSelectAnimation"
-    
-    @IBOutlet weak var lblTime: UILabel!
-    @IBOutlet weak var lblPrice: UILabel!
-    
     
     private var snapshotContainer: UIView =  {
         let view = UIView()
@@ -42,10 +38,10 @@ class CB3DSelectCell: UICollectionViewCell {
     }()
     private var overlayView: UIView = UIView()
     private var overlaySideView: UIView = UIView()
-    
-    
-    var csCenterX: NSLayoutConstraint?
-    var csCenterY: NSLayoutConstraint?
+    private var csCenterX: NSLayoutConstraint?
+    private var csCenterY: NSLayoutConstraint?
+    private var csOverlaySideViewLeft: NSLayoutConstraint?
+    private var csOverlaySideViewRight: NSLayoutConstraint?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -73,10 +69,12 @@ class CB3DSelectCell: UICollectionViewCell {
     
         overlayView.addSubview(overlaySideView)
         overlaySideView.translatesAutoresizingMaskIntoConstraints = false
-        overlaySideView.leadingAnchor.constraint(equalTo: overlayView.leadingAnchor).isActive = true
         overlaySideView.topAnchor.constraint(equalTo: overlayView.topAnchor).isActive = true
         overlaySideView.bottomAnchor.constraint(equalTo: overlayView.bottomAnchor).isActive = true
         overlaySideView.widthAnchor.constraint(equalToConstant: 5.0).isActive = true
+        csOverlaySideViewLeft = overlaySideView.leadingAnchor.constraint(equalTo: overlayView.leadingAnchor)
+        csOverlaySideViewRight = overlaySideView.trailingAnchor.constraint(equalTo: overlayView.trailingAnchor)
+        csOverlaySideViewLeft?.isActive = true
     }
     
     private func configureSnapshot() {
@@ -213,8 +211,12 @@ class CB3DSelectCell: UICollectionViewCell {
         switch offsetDirection {
         case .left:
             horOffsetMultiplier = -1.0
+            csOverlaySideViewRight?.isActive = true
+            csOverlaySideViewLeft?.isActive = false
         case .right:
             horOffsetMultiplier = 1.0
+            csOverlaySideViewLeft?.isActive = true
+            csOverlaySideViewRight?.isActive = false
         }
         
         if animated {
@@ -232,7 +234,7 @@ class CB3DSelectCell: UICollectionViewCell {
             
             let shadowOffset = CABasicAnimation(keyPath: "shadowOffset")
             shadowOffset.fromValue = CGSize.zero
-            shadowOffset.toValue = CGSize(width: horOffsetMultiplier * -20, height: 20)
+            shadowOffset.toValue = CGSize(width: horOffsetMultiplier * -20, height: 30)
             shadowOffset.timingFunction = selectionTimingFunction
             
             let shadowRadius = CABasicAnimation(keyPath: "shadowRadius")
@@ -262,7 +264,7 @@ class CB3DSelectCell: UICollectionViewCell {
                                                                   horOffsetMultiplier * frame.width * 0.2,
                                                                   -frame.height * 0.2, 0)
             snapshotContainer.layer.shadowOpacity = 0.3
-            snapshotContainer.layer.shadowOffset = CGSize(width: horOffsetMultiplier * -20.0, height: 20.0)
+            snapshotContainer.layer.shadowOffset = CGSize(width: horOffsetMultiplier * -20.0, height: 30.0)
             snapshotContainer.layer.shadowRadius = 35.0
             snapshotContainer.layer.cornerRadius = maxCornerRadius
         }
